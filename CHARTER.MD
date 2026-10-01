@@ -23,7 +23,7 @@ Advanced capabilities such as **attacker fingerprinting, MITRE ATT&CK mapping, a
   - **Samer Asfour:** Frontend Developer
   - **Arda Türkdönmez:** Database / Testing & DevOps Developer
 
-- **GH Repo/Project URL:** *To be filled after charter approval*
+- **GH Repo/Project URL:** https://github.com/El-Dorado26/hive-honeypot-network
 
 ---
 
