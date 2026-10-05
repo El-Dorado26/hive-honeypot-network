@@ -4,7 +4,7 @@ The Gantt chart provides a high-level schedule for the development of the HIVE H
 
 ```mermaid
 gantt
-    title HIVE Honeypot Network — Project Schedule
+    title HIVE Honeypot Network: Project Schedule
     dateFormat  YYYY-MM-DD
     axisFormat  %b %d
 
