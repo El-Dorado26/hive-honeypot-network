@@ -1,4 +1,4 @@
-# US-03 — Honeypot Registration
+# US-03 : Honeypot Registration
 
 **As a** HIVE operator, **I want** to register a configured honeypot, **so that** its events can be associated with the correct service.
 

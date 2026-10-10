@@ -1,4 +1,4 @@
-# US-08 — Audit Logging
+# US-08 : Audit Logging
 
 **As a** platform administrator, **I want** security-relevant platform actions to be recorded, **so that** access and administrative activity can be reviewed.
 

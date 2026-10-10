@@ -1,4 +1,4 @@
-# US-04 — Event Collection
+# US-04 : Event Collection
 
 **As a** security analyst, **I want** events from connected honeypots to reach the HIVE backend, **so that** activity can be reviewed centrally.
 

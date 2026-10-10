@@ -1,4 +1,4 @@
-# US-05 — Event Normalization and Storage
+# US-05 : Event Normalization and Storage
 
 **As a** security analyst, **I want** events normalized into a common structure and stored, **so that** events from different honeypots can be searched consistently.
 

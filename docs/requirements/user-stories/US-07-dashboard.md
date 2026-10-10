@@ -1,4 +1,4 @@
-# US-07 — Event and Alert Dashboard
+# US-07 : Event and Alert Dashboard
 
 **As a** security analyst, **I want** to view collected events and generated alerts in the web dashboard, **so that** I can understand honeypot activity from one place.
 

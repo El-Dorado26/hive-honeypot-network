@@ -1,4 +1,4 @@
-# US-02 — Role-Based Authorization
+# US-02 : Role-Based Authorization
 
 **As a** platform administrator, **I want** access to be restricted by role, **so that** users can only perform permitted actions.
 

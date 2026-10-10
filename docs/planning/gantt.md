@@ -1,6 +1,6 @@
 # HIVE Gantt Schedule (Draft)
 
-> Dates are planning estimates aligned to the known course milestones. Confirm working days, dependencies, and team availability before submission. The codebase milestone is 30 November 2026.
+> Dates are planning estimates aligned to the known course milestones. The codebase milestone is 30 November 2026.
 
 ```mermaid
 gantt

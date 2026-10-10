@@ -1,6 +1,6 @@
 # HIVE Work Breakdown Structure (WBS)
 
-> Draft for team review. Core scope is separated from optional stretch work.
+
 
 1. **Project Management**
    - 1.1 Requirements and planning

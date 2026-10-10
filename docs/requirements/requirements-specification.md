@@ -43,6 +43,7 @@ Additional honeypots, attacker fingerprinting, MITRE ATT&CK mapping, IOC extract
 - **Mohammed Al-Dirbashi:** Honeypot Developer.
 - **Samer Asfour:** Frontend Developer.
 - **Arda Türkdönmez:** Database, Testing, and DevOps responsibilities.
+ - **Mohammad Rjaie Rshde Shweiki:** Frontend Developer and edge cases testing 
 
 ## 5. Functional requirements
 

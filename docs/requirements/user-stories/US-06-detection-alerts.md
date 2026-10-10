@@ -1,4 +1,4 @@
-# US-06 — Basic Detection and Alerts
+# US-06 : Basic Detection and Alerts
 
 **As a** security analyst, **I want** configured rules to identify suspicious activity and generate alerts, **so that** repeated or suspicious interactions are easier to notice.
 

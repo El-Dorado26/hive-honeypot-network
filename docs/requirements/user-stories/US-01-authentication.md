@@ -1,4 +1,4 @@
-# US-01 — User Authentication
+# US-01 : User Authentication
 
 **As a** registered HIVE team member, **I want** to sign in, **so that** protected platform functions are not available to unauthenticated users.
 
