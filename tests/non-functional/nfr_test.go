@@ -2,131 +2,122 @@
 package nfrtests
 
 import (
-	"encoding/json"
+	"bytes"
+	"fmt"
+	"net/http"
+	"net/http/httptest"
+	"sort"
 	"testing"
 	"time"
 )
 
-type Event struct {
-	ID        string `json:"id"`
-	Source    string `json:"source"`
-	Timestamp string `json:"timestamp"`
-	EventType string `json:"event_type"`
+func sendEvent(body string) *httptest.ResponseRecorder {
+	req := httptest.NewRequest(
+		http.MethodPost,
+		"/api/events",
+		bytes.NewBufferString(body),
+	)
+
+	rec := httptest.NewRecorder()
+	EventHandler(rec, req)
+	return rec
 }
 
-// Reference validator for the planned HIVE event contract.
-func validateEvent(input []byte) error {
-	var event Event
-
-	if err := json.Unmarshal(input, &event); err != nil {
-		return err
-	}
-
-	if event.ID == "" ||
-		event.Source == "" ||
-		event.Timestamp == "" ||
-		event.EventType == "" {
-		return errInvalidEvent
-	}
-
-	return nil
-}
-
-type validationError string
-
-func (e validationError) Error() string {
-	return string(e)
-}
-
-const errInvalidEvent validationError = "missing required event field"
+const validEvent = `{
+	"id": "evt-001",
+	"source": "ssh",
+	"timestamp": "2026-10-11T10:00:00Z",
+	"event_type": "authentication_failure"
+}`
 
 func TestMalformedJSONIsRejected(t *testing.T) {
-	err := validateEvent([]byte(`{"id":`))
+	rec := sendEvent(`{"id":`)
 
-	if err == nil {
-		t.Fatal("expected malformed JSON to be rejected")
+	if rec.Code != http.StatusBadRequest {
+		t.Fatalf("got %d, want 400", rec.Code)
 	}
 }
 
 func TestMissingRequiredFieldIsRejected(t *testing.T) {
-	input := []byte(`{
+	rec := sendEvent(`{
 		"id": "evt-001",
 		"source": "ssh"
 	}`)
 
-	if err := validateEvent(input); err == nil {
-		t.Fatal("expected incomplete event to be rejected")
+	if rec.Code != http.StatusBadRequest {
+		t.Fatalf("got %d, want 400", rec.Code)
 	}
 }
 
 func TestValidEventIsAccepted(t *testing.T) {
-	input := []byte(`{
-		"id": "evt-001",
-		"source": "ssh",
-		"timestamp": "2026-10-11T10:00:00Z",
-		"event_type": "authentication_failure"
-	}`)
+	rec := sendEvent(validEvent)
 
-	if err := validateEvent(input); err != nil {
-		t.Fatalf("expected valid event to be accepted: %v", err)
+	if rec.Code != http.StatusAccepted {
+		t.Fatalf("got %d, want 202", rec.Code)
 	}
 }
 
-func TestValidatorRecoversAfterInvalidInput(t *testing.T) {
+func TestNonPostMethodIsRejected(t *testing.T) {
+	req := httptest.NewRequest(http.MethodGet, "/api/events", nil)
+	rec := httptest.NewRecorder()
+
+	EventHandler(rec, req)
+
+	if rec.Code != http.StatusMethodNotAllowed {
+		t.Fatalf("got %d, want 405", rec.Code)
+	}
+}
+
+func TestHandlerRecoversAfterInvalidRequests(t *testing.T) {
 	for i := 0; i < 100; i++ {
-		_ = validateEvent([]byte(`{"id":`))
+		rec := sendEvent(`{"id":`)
+
+		if rec.Code != http.StatusBadRequest {
+			t.Fatalf("invalid request %d: got %d, want 400",
+				i, rec.Code)
+		}
 	}
 
-	valid := []byte(`{
-		"id": "evt-002",
-		"source": "http",
-		"timestamp": "2026-10-11T10:00:00Z",
-		"event_type": "request"
-	}`)
+	rec := sendEvent(validEvent)
 
-	if err := validateEvent(valid); err != nil {
-		t.Fatalf("valid event failed after invalid inputs: %v", err)
+	if rec.Code != http.StatusAccepted {
+		t.Fatalf("valid request after invalid requests: got %d, want 202",
+			rec.Code)
 	}
 }
 
-func TestValidationPerformance(t *testing.T) {
-	input := []byte(`{
-		"id": "evt-003",
-		"source": "ssh",
-		"timestamp": "2026-10-11T10:00:00Z",
-		"event_type": "authentication_failure"
-	}`)
+func TestEventHandlerResponseTime(t *testing.T) {
+	const requests = 100
+	durations := make([]time.Duration, 0, requests)
 
-	const iterations = 100
-	var durations []time.Duration
+	for i := 0; i < requests; i++ {
+		req := httptest.NewRequest(
+			http.MethodPost,
+			"/api/events",
+			bytes.NewBufferString(validEvent),
+		)
+		rec := httptest.NewRecorder()
 
-	for i := 0; i < iterations; i++ {
 		start := time.Now()
-		err := validateEvent(input)
+		EventHandler(rec, req)
 		elapsed := time.Since(start)
 
-		if err != nil {
-			t.Fatalf("valid event rejected: %v", err)
+		if rec.Code != http.StatusAccepted {
+			t.Fatalf("request %d: got %d, want 202",
+				i, rec.Code)
 		}
 
 		durations = append(durations, elapsed)
 	}
 
-	// Sort the 100 durations to obtain the nearest-rank
-	// 95th percentile: the 95th observation.
-	for i := 0; i < len(durations); i++ {
-		for j := i + 1; j < len(durations); j++ {
-			if durations[j] < durations[i] {
-				durations[i], durations[j] =
-					durations[j], durations[i]
-			}
-		}
-	}
+	sort.Slice(durations, func(i, j int) bool {
+		return durations[i] < durations[j]
+	})
 
 	p95 := durations[94]
-	t.Logf("Validator-only p95: %v", p95)
+	t.Log(fmt.Sprintf("Prototype handler p95: %v", p95))
 
 	if p95 > 500*time.Millisecond {
-		t.Fatalf("validator p95 %v exceeds 500 ms", p95)
+		t.Fatalf("p95 %v exceeds the preliminary 500 ms target", p95)
 	}
 }
