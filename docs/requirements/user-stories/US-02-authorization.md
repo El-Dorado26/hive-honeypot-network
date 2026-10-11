@@ -1,12 +1,25 @@
-# US-02 : Role-Based Authorization
 
-**As a** platform administrator, **I want** access to be restricted by role, **so that** users can only perform permitted actions.
+# US-02: Role-Based Authorization
 
-## Acceptance criteria
-- A request from an authenticated user with permission is allowed.
-- A request from an authenticated user without permission is denied.
-- Authorization is enforced by the backend, not only by hiding frontend controls.
-- Denied access attempts are auditable.
+## User Story
 
-**Priority:** Must have  
-**Related test:** `tests/requirements/US-02-authorization_test.go`
+As a system administrator, I want HIVE to enforce role-based access control so that users can only perform actions permitted by their assigned roles.
+
+## Acceptance Criteria
+
+### Scenario 1: Allow an authorized action
+Given an authenticated user has a role permitted to perform an action
+When the user requests that action
+Then the system allows the request
+
+### Scenario 2: Deny an unauthorized action
+Given an authenticated user does not have permission to perform an action
+When the user requests that action
+Then the system denies the request
+And does not perform the restricted action
+
+### Scenario 3: Deny access to protected resources without authentication
+Given a client is not authenticated
+When the client requests a protected resource
+Then the system returns HTTP 401
+And does not disclose protected data
