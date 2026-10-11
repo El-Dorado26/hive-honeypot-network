@@ -1,13 +1,32 @@
-# US-07 : Event and Alert Dashboard
 
-**As a** security analyst, **I want** to view collected events and generated alerts in the web dashboard, **so that** I can understand honeypot activity from one place.
+# US-07: Dashboard and Event Search
 
-## Acceptance criteria
-- An authorized user can view a list of stored events.
-- An authorized user can view generated alerts.
-- Event and alert details show relevant timestamps, service type, and source information.
-- Loading, empty, and error states are presented clearly.
-- Unauthorized users cannot retrieve protected dashboard data through direct API requests.
+## User Story
 
-**Priority:** Must have  
-**Related test:** `tests/requirements/US-07-dashboard_test.go`
+As a security analyst, I want to view a dashboard and search collected events so that I can investigate activity captured by HIVE.
+
+## Acceptance Criteria
+
+### Scenario 1: View the dashboard
+Given an authenticated user has permission to view the dashboard
+When the user opens the dashboard
+Then HIVE displays the available event and alert summaries
+
+### Scenario 2: Search for events
+Given an authenticated user has permission to view events
+And HIVE contains stored events
+When the user submits a search using supported search criteria
+Then HIVE returns the events matching those criteria
+
+### Scenario 3: Return no results
+Given an authenticated user has permission to view events
+When the user submits a valid search that matches no stored events
+Then HIVE displays an empty result
+And does not present unrelated events as matches
+
+### Scenario 4: Deny unauthorized event access
+Given a user does not have permission to view events
+When the user requests event data
+Then HIVE denies the request
+And does not disclose the protected event data
+
