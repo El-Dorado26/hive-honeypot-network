@@ -2,122 +2,255 @@
 
 ## Overview
 
-HIVE is a cybersecurity project focused on developing a centralized honeypot network for observing, collecting, and analyzing potentially malicious activity against deliberately exposed services.
+HIVE is an academic cybersecurity and software engineering project focused on developing a centralized honeypot network for observing, collecting, and analyzing potentially malicious activity against deliberately exposed services.
 
-The project aims to provide a modular platform that deploys honeypots, collects their events in a centralized system, and presents security-relevant information through a unified interface. By consolidating activity from multiple honeypots, HIVE is intended to help security teams understand suspicious behavior and investigate potential threats in a controlled environment.
+The platform aims to consolidate events from multiple honeypots into a centralized system, process and store the collected information, and present security-relevant activity through a unified web interface.
 
-HIVE is being developed as an academic software engineering and cybersecurity project, with an emphasis on modular architecture, secure development practices, maintainability, and automated testing.
+HIVE emphasizes modular architecture, secure development practices, documented requirements, automated testing, and traceability between planned functionality and implementation.
+
+The project is intended for educational, research, and controlled demonstration environments. It is not intended to replace a production Security Information and Event Management (SIEM) platform or a complete Security Operations Center (SOC).
 
 ## Objectives
 
 The main objectives of HIVE are to:
 
-- Deploy multiple honeypot services to observe suspicious interactions.
-- Collect and centralize honeypot events through a common backend.
-- Store collected events in a structured and searchable format.
+- Deploy controlled honeypot services to observe suspicious interactions.
+- Collect events from supported honeypots through a common backend.
+- Validate, normalize, and store collected events in a structured format.
 - Provide a dashboard for viewing and investigating recorded activity.
-- Support analysis of security events through a consistent data model.
-- Apply authentication, authorization, testing, and secure software development practices.
-- Establish a modular foundation that can support additional honeypots and analysis capabilities in the future.
+- Support basic detection rules and security alert generation.
+- Implement authentication and backend-enforced role-based authorization.
+- Maintain audit records for defined security-relevant operations.
+- Establish automated tests and continuous integration.
+- Maintain traceability between requirements, user stories, tests, and project planning documents.
+- Provide a modular foundation for future honeypot integrations and analysis capabilities.
 
 ## Initial Scope
 
-The initial project scope focuses on three honeypot targets:
+The initial release focuses on the following honeypot targets:
 
 - **SSH Honeypot:** Simulates an SSH service to observe connection attempts and other suspicious interactions.
 - **HTTP/Web Honeypot:** Simulates a web-facing service to record requests and investigate potentially malicious activity.
-- **Simulated API Honeypot:** Exposes a controlled API interface to observe requests, unexpected inputs, and suspicious usage patterns.
+- **Simulated API Honeypot:** Provides a controlled API interface for observing requests, unexpected inputs, and suspicious usage patterns, where feasible within the project schedule.
 
-The collected events are intended to flow into a centralized backend for processing, storage, and visualization.
+The core platform is intended to provide:
 
-Additional honeypots and advanced threat analysis features may be considered as future extensions, subject to project priorities and team approval.
+- A Go backend and REST API.
+- PostgreSQL persistence.
+- A React-based web dashboard.
+- Authentication and role-based authorization.
+- Honeypot registration and event ingestion.
+- A common event schema and event normalization.
+- Basic detection rules and alert generation.
+- Audit logging.
+- Automated testing and continuous integration.
+- Technical documentation and deployment instructions.
+
+The implementation status of each feature will be determined by the available code and verification evidence, not merely by its inclusion in this README.
+
+### Out of Scope
+
+The initial release does not aim to:
+
+- Replace a production SIEM or SOC.
+- Guarantee detection of every attack.
+- Use real sensitive production data or connect to production systems.
+- Provide unrestricted offensive infrastructure or unauthorized scanning capabilities.
+- Implement every possible honeypot protocol.
+- Guarantee production-grade performance, availability, or scalability without appropriate testing.
+
+### Potential Extensions
+
+Additional honeypots, attacker fingerprinting, MITRE ATT&CK mapping, Indicator of Compromise (IOC) extraction, session replay, and threat-intelligence export may be considered if time and resources permit.
+
+These extensions are not core-release commitments.
 
 ## Planned Architecture
 
-HIVE is designed around the following logical components:
+HIVE is designed around the following logical components.
 
-1. **Honeypot Layer:** Hosts the SSH, HTTP/web, and simulated API honeypots.
-2. **Event Collection Layer:** Receives and standardizes events generated by the honeypots.
-3. **Backend/API Layer:** Provides the interfaces and application logic required to process events and serve the frontend.
-4. **Storage Layer:** Persists collected events and related application data.
-5. **Dashboard:** Presents recorded activity and security-relevant information through a unified interface.
+### 1. Honeypot Layer
 
-The architecture is intended to keep the honeypots, event processing, storage, and user interface modular so that individual components can be developed and maintained independently.
+Hosts the supported honeypot services, initially focusing on SSH and HTTP/web, with a simulated API honeypot where feasible.
 
-The architecture and technology choices will be refined as implementation progresses.
+### 2. Event Collection Layer
+
+Receives events generated by the honeypots, validates incoming data, and converts supported events into a common format.
+
+### 3. Backend/API Layer
+
+Provides the REST API and application logic for event processing, user authentication, authorization, honeypot management, and frontend access.
+
+### 4. Storage Layer
+
+Uses PostgreSQL for structured application data and event persistence.
+
+Elasticsearch may be considered for additional event search and analysis, subject to the team's final architecture decision.
+
+### 5. Detection and Alerting
+
+Evaluates agreed basic detection rules and generates alerts when the configured conditions are met.
+
+### 6. Dashboard
+
+Provides a unified interface for authorized users to view and search recorded events and review security alerts.
+
+The architecture is intended to keep the honeypots, event processing, storage, detection, and dashboard modular so that individual components can be developed and maintained independently.
+
+The final architecture and component responsibilities will be refined as implementation progresses.
 
 ## Planned Technology Stack
 
-The project is intended to use the following technologies and components:
+| Component | Planned Technology or Approach |
+|---|---|
+| Backend and API | Go |
+| Primary database | PostgreSQL |
+| Event search and analysis | Elasticsearch, subject to confirmation |
+| Frontend | React |
+| Version control | Git and GitHub |
+| Continuous integration | GitHub Actions |
+| Testing | Automated unit, integration, behavioral, and non-functional tests as applicable |
+| Requirements and planning | Markdown documentation and Mermaid diagrams where appropriate |
 
-- **Go:** Backend services and honeypot development.
-- **PostgreSQL:** Structured data storage.
-- **Elasticsearch:** Search and analysis of collected events, subject to final implementation decisions.
-- **Web Frontend:** Dashboard for displaying collected events and security information.
-- **Git and GitHub:** Version control, collaboration, and project management.
-- **Automated Testing:** Verification of application behavior and requirements.
+The table describes the intended technology stack. A technology should not be considered part of the implemented system until its use has been confirmed in the repository and project architecture.
 
-The final technology stack and component responsibilities may evolve as the architecture is implemented and validated.
+## Requirements and Project Planning
+
+HIVE uses documented requirements and planning artifacts to coordinate development and verify that implementation matches the agreed scope.
+
+The project documentation covers:
+
+- Functional requirements.
+- Measurable non-functional requirements.
+- User stories and BDD-style acceptance criteria.
+- A use case diagram.
+- A hierarchical Work Breakdown Structure (WBS).
+- A dependency network with task durations and critical-path analysis.
+- A Gantt chart aligned with the dependency network.
+- Automated tests and verification evidence.
+
+The planning documents use a project deadline of **30 November 2026 at 23:59**, subject to approved schedule changes.
+
+Task estimates and dependencies are planning assumptions. They should be updated when implementation progress or changed requirements affect the schedule.
 
 ## Repository Structure
 
-The repository contains the project source code, planning documents, requirements, and tests.
+The following is the intended logical structure. Exact filenames and locations must match the files actually committed to the repository.
 
 ```text
 HIVE/
+├── .github/
+│   └── workflows/
+│       └── non-functional-tests.yml
 ├── docs/
 │   ├── planning/
-│   │   ├── WBS.md
-│   │   ├── dependency-network.md
-│   │   └── gantt-chart.md
+│   │   ├── wbs.md
+│   │   ├── pert-dependencies.md
+│   │   └── gantt.md
 │   └── requirements/
-│       ├── user-stories/
-│       └── requirements-specification.md
+│       ├── requirements-specifications.md
+│       ├── use-case-diagram.puml
+│       └── user-stories/
 ├── tests/
+│   ├── non-functional/
+│   │   ├── go.mod
+│   │   ├── handler.go
+│   │   ├── nfr_test.go
+│   │   └── README.md
 │   └── requirements/
 ├── go.mod
 └── README.md
 ```
 
-*Note: This is the intended logical structure. The actual repository may contain additional directories and files as development progresses.*
+Additional source-code directories and configuration files may be added as implementation develops.
 
 ### Documentation
 
-The `docs/` directory contains project planning and requirements artifacts, including the Work Breakdown Structure (WBS), dependency network, Gantt chart, individual user stories, and the requirements specification.
+The `docs/` directory contains requirements, user stories, use case modeling, and project planning documents.
+
+The requirements specification defines the expected system behavior, functional requirements, measurable non-functional requirements, and verification methods.
+
+Individual user-story files describe functionality from the relevant user's perspective and specify acceptance criteria using the **Given/When/Then** format.
+
+The planning documents describe the work packages, task dependencies, schedule estimates, slack, critical path, and project milestones.
 
 ### Tests
 
-The `tests/` directory contains tests associated with project requirements. Initial requirement tests may include placeholders while the corresponding functionality is awaiting implementation. These will be replaced or extended with behavioral tests as development progresses.
+The `tests/` directory contains automated tests and supporting documentation.
+
+The non-functional test suite currently contains prototype tests for event validation, malformed requests, handler resilience, and preliminary response-time performance.
+
+The `tests/requirements/` directory may contain additional requirement-related tests as they are implemented. Any remaining placeholders must be clearly identified and must not be treated as passing verification evidence.
+
+The GitHub Actions workflow runs the configured non-functional prototype tests automatically.
 
 ### Source Code
 
-The Go source code and its organization will follow the repository's actual Go module structure. Individual components may be separated into packages as the implementation develops.
+The Go module structure and source-code organization will follow the repository's actual implementation.
 
-## Requirements and Planning
-
-HIVE's development is guided by documented requirements and project planning artifacts.
-
-The requirements documentation defines the expected system behavior, functional and non-functional requirements, and acceptance criteria. The planning documents organize the work into tasks, dependencies, and a development schedule.
-
-These artifacts provide a shared reference for the team and help maintain consistency between the intended system, its implementation, and its tests.
+Backend services, honeypot integrations, database access, and other components may be separated into packages or directories as the architecture develops.
 
 ## Testing Strategy
 
-Testing is an important part of HIVE's development process.
+Testing is used to verify application behavior and determine whether implemented requirements have been satisfied.
 
-The project aims to use automated tests to verify individual components, API behavior, event processing, and relevant security controls.
+The intended testing approach includes:
 
-During the initial requirements phase, some tests may serve as temporary placeholders that identify functionality not yet implemented. Such placeholders are not evidence that a feature works. They will be replaced with meaningful assertions as the corresponding components become available.
+- **Unit testing:** Verifies individual functions and components.
+- **API testing:** Checks request validation, HTTP responses, and endpoint behavior.
+- **Integration testing:** Verifies interactions between application components.
+- **Security testing:** Checks authentication, authorization, input validation, and audit behavior.
+- **Non-functional testing:** Measures specified performance and reliability targets and verifies applicable quality requirements.
+- **Frontend testing:** Checks relevant dashboard behavior, including loading, empty, and error states.
+- **Deployment verification:** Checks whether a new development environment can be configured using the documented instructions.
 
-The testing process will evolve alongside the implementation, with the goal of verifying that delivered functionality satisfies its documented acceptance criteria.
+### Current Prototype Test Status
+
+The current Go prototype suite has six passing tests:
+
+1. Malformed JSON is rejected.
+2. Events missing required fields are rejected.
+3. Valid events are accepted.
+4. Unsupported HTTP methods are rejected.
+5. The handler recovers after invalid requests.
+6. Preliminary event-handler response time is measured.
+
+These tests currently pass in GitHub Actions.
+
+The response-time test measures the prototype handler rather than the complete HIVE application. It does not establish end-to-end performance involving the database, frontend, network, or all integrations.
+
+Full-system verification remains pending for functionality not covered by the current prototype suite, including authentication, role-based authorization, audit logging, frontend usability, and deployment.
+
+Test results and requirement statuses will be updated as additional functionality is implemented and verified.
+
+## Security and Responsible Use
+
+HIVE is intended for cybersecurity education, research, and controlled observation of potentially malicious activity.
+
+Honeypots should be deployed in appropriately isolated and monitored environments. Before deployment, the team should consider:
+
+- Network exposure and access restrictions.
+- Isolation from production systems.
+- Resource limits and service availability.
+- Authentication and authorization.
+- Secure handling and retention of collected information.
+- Protection of application credentials and secrets.
+- Audit logging and monitoring.
+- Prevention of unrestricted access to the host operating system or other resources.
+
+Only authorized infrastructure and synthetic or otherwise appropriately authorized data should be used for testing and demonstrations.
+
+HIVE should not be treated as a substitute for a production intrusion detection system, SIEM platform, or complete security monitoring operation.
 
 ## Development Status
 
-**Current phase:** Requirements and project planning.
+**Current phase:** Requirements, project planning, and prototype testing.
 
-The initial focus is on defining the project scope, documenting user stories and acceptance criteria, preparing planning artifacts, and establishing the foundation for implementation.
+The current focus is on documenting the system requirements, preparing BDD acceptance criteria, maintaining the planning artifacts, and establishing automated test execution.
 
-Features described as planned or intended in this README should not be considered implemented until they have been developed and verified.
+The Go prototype test suite is operational, with six tests currently passing in GitHub Actions. This does not mean that the complete application or all functional and non-functional requirements have been implemented or verified.
+
+Features described as planned or intended in this README should not be considered implemented until their implementation and verification have been confirmed.
 
 ## Future Development
 
@@ -127,26 +260,23 @@ Potential future extensions include:
 - Advanced event correlation and threat analysis.
 - Attacker fingerprinting and behavioral analysis.
 - MITRE ATT&CK technique mapping.
-- Indicator of Compromise (IOC) extraction.
-- Session replay and threat-intelligence export.
+- IOC extraction.
+- Session replay.
+- Threat-intelligence export.
+- Additional search and visualization capabilities.
 
-These capabilities are potential extensions rather than commitments in the initial project scope. Their inclusion will depend on available time, technical feasibility, and team approval.
-
-## Security and Responsible Use
-
-HIVE is intended for cybersecurity research, education, and controlled observation of potentially malicious activity.
-
-Honeypots should be deployed in appropriately isolated and monitored environments. Network exposure, access controls, resource limits, data retention, and the handling of collected information should be considered before deployment.
-
-HIVE should not be treated as a substitute for a production intrusion detection system or a complete security monitoring platform.
+These capabilities depend on available time, technical feasibility, team priorities, and approval of any changes to the project scope.
 
 ## License
 
-A project license will be specified once the team has selected and approved the appropriate licensing terms.
+A project license will be specified after the team has selected and approved the appropriate licensing terms.
+
+Until then, no specific open-source license is declared by this README.
 
 ## Contributors
 
 HIVE is developed collaboratively as an academic software engineering and cybersecurity project.
 
-Contributions are organized through the project's version control and collaboration workflow.
+Project responsibilities include product ownership and project management, cybersecurity, backend/API development, honeypot development, frontend development, database management, testing, and DevOps.
 
+Development work is coordinated through the repository's version-control and collaboration workflow.
