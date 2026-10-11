@@ -60,19 +60,38 @@ Additional honeypots, attacker fingerprinting, MITRE ATT&CK mapping, IOC extract
 
 ## 6. Non-functional requirements
 
-- **Security:** Enforce least privilege, validate input, protect credentials, and isolate honeypots from production systems.
-- **Auditability:** Record relevant security and administrative actions without logging secrets.
-- **Reliability:** Malformed event input should be rejected safely without crashing the service.
-- **Maintainability:** Keep honeypot integrations modular and use a common event structure.
-- **Testability:** Provide unit, API, integration, authorization, and detection-rule tests as appropriate.
-- **Usability:** Provide clear loading, empty, success, and error states in the web interface.
-- **Deployment:** Demonstrate the platform in a controlled environment and document known limitations.
+The following requirements define measurable quality targets for the initial HIVE release. The targets are intended for a controlled development or demonstration environment and must be verified through automated tests or documented measurements.
 
-No numerical performance or availability targets have been specified yet. The team should agree on measurable targets if required by the course rubric.
+| ID | Category | Requirement | Verification |
+|---|---|---|---|
+| NFR-01 | Security | The backend shall reject unauthenticated requests to protected endpoints with HTTP 401. Requests from authenticated users without the required permissions shall receive HTTP 403. | Automated API authorization tests |
+| NFR-02 | Input validation | The event ingestion API shall reject malformed JSON and events missing required fields with an appropriate 4xx response. These requests shall not terminate the backend process. | API integration tests |
+| NFR-03 | Performance | Under a controlled test load of 100 valid event submissions, at least 95% of requests shall complete within 500 ms, excluding network latency outside the test environment. | Automated performance test |
+| NFR-04 | Reliability | The backend shall remain available to process valid events after 100 consecutive malformed event submissions. | Automated resilience test |
+| NFR-05 | Auditability | 100% of successfully completed administrative actions covered by the audit policy shall produce an audit record containing the actor, action, timestamp, and outcome. Secrets and passwords shall not be recorded. | Audit integration tests and log inspection |
+| NFR-06 | Access control | Users without the required role or resource permission shall be unable to perform protected administrative operations, including through direct API requests. | Automated authorization tests |
+| NFR-07 | Usability | The web interface shall display a loading indicator while dashboard data is being fetched and a clear error or empty state when applicable. | Frontend component tests |
+| NFR-08 | Maintainability | Each supported honeypot integration shall produce events that conform to the documented common event schema. | Unit and integration tests |
+| NFR-09 | Testability | All implemented Must-priority functional requirements shall have automated tests for their principal success path and relevant failure or authorization cases. | Requirements-to-test traceability review |
+| NFR-10 | Deployment | A new development environment shall be deployable by following the documented setup instructions without undocumented manual configuration steps. | Clean-environment deployment test |
+
+### Measurement conditions and limitations
+
+- Performance measurements shall record the test environment, request count, and observed response times.
+- Performance targets apply to the documented demonstration environment and are not production capacity guarantees.
+- Security tests shall use dedicated test accounts and synthetic data.
+- Audit tests shall verify that secrets, passwords, and other explicitly excluded sensitive values are not written to logs.
+- Any requirement that cannot be met within the project schedule shall be documented with its status, evidence, and justification.
 
 ## 7. Acceptance and verification
 
-Each user story has acceptance criteria and a corresponding initial test placeholder in `tests/requirements/`. The placeholders intentionally fail until implemented. They must be replaced with behavioral tests as implementation proceeds.
+Functional requirements shall be verified through user-story acceptance criteria and automated behavioral tests.
+
+Non-functional requirements shall be verified through the measurements and tests defined in Section 6, including security, authorization, performance, reliability, auditability, usability, and deployment verification where applicable.
+
+Each test shall reference the requirement it verifies. Tests shall use controlled test accounts, synthetic event data, and an isolated development or test environment.
+
+Test placeholders shall be replaced with executable tests as implementation proceeds. The team shall document test results, unmet targets, and known limitations before the final demonstration.
 
 ## 8. Traceability
 
