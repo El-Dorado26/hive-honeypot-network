@@ -1,6 +1,6 @@
 HIVE Work Breakdown Structure (WBS)
 
-The Work Breakdown Structure decomposes the HIVE Honeypot Network project into manageable deliverables and work packages. The diagram uses a hierarchical structure, with the project at the root and progressively smaller work packages beneath each major work area.
+The Work Breakdown Structure (WBS) decomposes the HIVE Honeypot Network project into manageable deliverables and work packages. The diagram presents a hierarchy from the overall project to major work areas, subdivisions, and individual work packages.
 
 WBS Diagram
 
@@ -120,6 +120,10 @@ WBS Interpretation
 - Level 1: The complete HIVE Honeypot Network project.
 - Level 2: Major project work areas, numbered 1.0 through 9.0.
 - Level 3: Subdivisions of each major work area.
-- Level 4: Individual work packages that describe specific activities or deliverables.
+- Level 4: Individual work packages describing specific activities or deliverables.
 
-The WBS describes the scope and decomposition of the project work. Task durations, dependencies, slack, and the critical path are documented separately in the PERT planning document. The schedule is documented in the Gantt chart.
+The WBS describes the scope and decomposition of project work. Task durations, dependencies, slack, and the critical path are documented separately in the PERT planning document. The project schedule is documented in the Gantt chart.
+
+Scope and Planning Notes
+
+The WBS identifies planned work and does not, by itself, confirm that any task has been completed. Implementation status and testing evidence should be recorded separately. The PERT and Gantt documents should use consistent task identifiers so that work packages can be traced across the planning documents.
