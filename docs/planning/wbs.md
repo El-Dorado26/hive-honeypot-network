@@ -4,7 +4,7 @@ The Work Breakdown Structure (WBS) decomposes the HIVE Honeypot Network project 
 
 WBS Diagram
 
-mindmap
+```mindmap
   root((HIVE Honeypot Network))
     1.0 Project Management
       1.1 Project coordination
@@ -110,7 +110,7 @@ mindmap
       9.2 Additional integrations
         9.2.1 Evaluate further honeypot types
         9.2.2 Document feasibility and future improvements
-
+```
 Scope Note
 
 Sections 1.0 through 8.0 describe the planned core project work. Section 9.0 contains optional advanced features that may be considered after the required deliverables are completed. Optional features must not delay the core project deliverables.
