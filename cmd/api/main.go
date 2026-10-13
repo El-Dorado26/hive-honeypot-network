@@ -80,7 +80,7 @@ func main() {
 	store := database.NewDBStore(db)
 	eventHandler := events.EventHandler{Store: store}
 
-	mux.HandleFunc("/api/events", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/api/v1/events", func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
 		case http.MethodGet:
 			eventHandler.List(w, r)

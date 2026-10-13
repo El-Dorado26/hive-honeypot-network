@@ -91,7 +91,7 @@ func sendRequest(
 ) *httptest.ResponseRecorder {
 	handler := EventHandler{Store: store}
 
-	req := httptest.NewRequest(method, "/api/events", strings.NewReader(body))
+	req := httptest.NewRequest(method, "/api/v1/events", strings.NewReader(body))
 	if contentType != "" {
 		req.Header.Set("Content-Type", contentType)
 	}
@@ -250,7 +250,7 @@ func sendListRequest(store *fakeStore, target string) *httptest.ResponseRecorder
 
 func TestListEventsUsesDefaultPagination(t *testing.T) {
 	store := &fakeStore{}
-	recorder := sendListRequest(store, "/api/events")
+	recorder := sendListRequest(store, "/api/v1/events")
 
 	if recorder.Code != http.StatusOK {
 		t.Fatalf("expected status 200, got %d: %s",
@@ -287,7 +287,7 @@ func TestListEventsUsesDefaultPagination(t *testing.T) {
 
 func TestListEventsPagination(t *testing.T) {
 	store := &fakeStore{}
-	recorder := sendListRequest(store, "/api/events?page=1&limit=1")
+	recorder := sendListRequest(store, "/api/v1/events?page=1&limit=1")
 
 	if recorder.Code != http.StatusOK {
 		t.Fatalf("expected status 200, got %d: %s",
@@ -328,13 +328,13 @@ func TestListEventsRejectsInvalidPagination(t *testing.T) {
 		name string
 		path string
 	}{
-		{name: "zero page", path: "/api/events?page=0"},
-		{name: "negative page", path: "/api/events?page=-1"},
-		{name: "non-numeric page", path: "/api/events?page=abc"},
-		{name: "zero limit", path: "/api/events?limit=0"},
-		{name: "limit too large", path: "/api/events?limit=101"},
-		{name: "non-numeric limit", path: "/api/events?limit=abc"},
-		{name: "duplicate page", path: "/api/events?page=1&page=2"},
+		{name: "zero page", path: "/api/v1/events?page=0"},
+		{name: "negative page", path: "/api/v1/events?page=-1"},
+		{name: "non-numeric page", path: "/api/v1/events?page=abc"},
+		{name: "zero limit", path: "/api/v1/events?limit=0"},
+		{name: "limit too large", path: "/api/v1/events?limit=101"},
+		{name: "non-numeric limit", path: "/api/v1/events?limit=abc"},
+		{name: "duplicate page", path: "/api/v1/events?page=1&page=2"},
 	}
 
 	for _, tt := range tests {
@@ -352,7 +352,7 @@ func TestListEventsRejectsInvalidPagination(t *testing.T) {
 
 func TestListEventsHandlesStorageFailure(t *testing.T) {
 	store := &fakeStore{fail: true}
-	recorder := sendListRequest(store, "/api/events")
+	recorder := sendListRequest(store, "/api/v1/events")
 
 	if recorder.Code != http.StatusInternalServerError {
 		t.Errorf("expected status 500, got %d: %s",
