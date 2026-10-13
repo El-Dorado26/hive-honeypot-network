@@ -72,14 +72,29 @@ func main() {
 
 	mux := http.NewServeMux()
 
-	// Existing health endpoints.
+	// Existing health endpoints
 	mux.HandleFunc("/health", healthHandler)
 	mux.HandleFunc("/health/db", databaseHealthHandler(db.PingContext))
 
-	// New event ingestion endpoint.
+	// Event ingestion and retrieval endpoints
 	store := database.NewDBStore(db)
 	eventHandler := events.EventHandler{Store: store}
-	mux.Handle("/api/events", http.HandlerFunc(eventHandler.Create))
+
+	mux.HandleFunc("/api/events", func(w http.ResponseWriter, r *http.Request) {
+		switch r.Method {
+		case http.MethodGet:
+			eventHandler.List(w, r)
+		case http.MethodPost:
+			eventHandler.Create(w, r)
+		default:
+			w.Header().Set("Allow", "GET, POST")
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusMethodNotAllowed)
+			_ = json.NewEncoder(w).Encode(map[string]string{
+				"error": "Method not allowed",
+			})
+		}
+	})
 
 	addr := ":8080"
 	log.Printf("HIVE API starting on %s", addr)
@@ -87,4 +102,5 @@ func main() {
 	if err := http.ListenAndServe(addr, mux); err != nil {
 		log.Fatal(err)
 	}
+
 }

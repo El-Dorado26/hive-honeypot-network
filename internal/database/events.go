@@ -46,3 +46,62 @@ func (db *DBStore) CreateEvent(
 
 	return id, receivedAt, nil
 }
+
+// Event represents one stored HIVE event.
+type Event struct {
+	ID         int64           `json:"id"`
+	Source     string          `json:"source"`
+	EventType  string          `json:"event_type"`
+	OccurredAt time.Time       `json:"occurred_at"`
+	EventData  json.RawMessage `json:"event_data"`
+	ReceivedAt time.Time       `json:"received_at"`
+}
+
+// ListEvents retrieves events in newest first order
+func (db *DBStore) ListEvents(
+	ctx context.Context,
+	limit int,
+	offset int,
+) ([]Event, error) {
+	rows, err := db.conn.QueryContext(
+		ctx,
+		`SELECT id, source, event_type, occurred_at, event_data, received_at
+		 FROM events
+		 ORDER BY occurred_at DESC, id DESC
+		 LIMIT $1 OFFSET $2`,
+		limit,
+		offset,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("list events: %w", err)
+	}
+	defer rows.Close()
+
+	events := make([]Event, 0, limit)
+
+	for rows.Next() {
+		var event Event
+		var eventData []byte
+
+		err := rows.Scan(
+			&event.ID,
+			&event.Source,
+			&event.EventType,
+			&event.OccurredAt,
+			&eventData,
+			&event.ReceivedAt,
+		)
+		if err != nil {
+			return nil, fmt.Errorf("scan event: %w", err)
+		}
+
+		event.EventData = json.RawMessage(eventData)
+		events = append(events, event)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("iterate events: %w", err)
+	}
+
+	return events, nil
+}

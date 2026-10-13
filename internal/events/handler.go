@@ -1,4 +1,3 @@
-
 package events
 
 import (
@@ -11,9 +10,12 @@ import (
 	"strings"
 	"time"
 	"unicode/utf8"
+
+	"hive-honeypot-network/internal/database"
+	"strconv"
 )
 
-// Store describes the database operation the handler needs.
+// Store describes the database operation the handler needs
 type Store interface {
 	CreateEvent(
 		ctx context.Context,
@@ -22,6 +24,12 @@ type Store interface {
 		occurredAt time.Time,
 		eventData []byte,
 	) (int64, time.Time, error)
+
+	ListEvents(
+		ctx context.Context,
+		limit int,
+		offset int,
+	) ([]database.Event, error)
 }
 
 // EventInput represents the JSON sent by a client.
@@ -144,5 +152,83 @@ func (h EventHandler) Create(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusCreated, map[string]any{
 		"id":          id,
 		"received_at": receivedAt,
+	})
+}
+
+// List handles GET /api/events with pagination
+func (h EventHandler) List(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		w.Header().Set("Allow", http.MethodGet)
+		writeJSON(w, http.StatusMethodNotAllowed,
+			map[string]string{"error": "Method not allowed"})
+		return
+	}
+
+	page := 1
+	limit := 20
+
+	query := r.URL.Query()
+
+	if values, exists := query["page"]; exists {
+		if len(values) != 1 {
+			writeJSON(w, http.StatusBadRequest,
+				map[string]string{"error": "page must be a positive integer"})
+			return
+		}
+
+		value, err := strconv.Atoi(values[0])
+		if err != nil || value < 1 || value > 1000000 {
+			writeJSON(w, http.StatusBadRequest,
+				map[string]string{"error": "page must be between 1 and 1000000"})
+			return
+		}
+		page = value
+	}
+
+	if values, exists := query["limit"]; exists {
+		if len(values) != 1 {
+			writeJSON(w, http.StatusBadRequest,
+				map[string]string{"error": "limit must be between 1 and 100"})
+			return
+		}
+
+		value, err := strconv.Atoi(values[0])
+		if err != nil || value < 1 || value > 100 {
+			writeJSON(w, http.StatusBadRequest,
+				map[string]string{"error": "limit must be between 1 and 100"})
+			return
+		}
+		limit = value
+	}
+
+	offset := (page - 1) * limit
+
+	if h.Store == nil {
+		writeJSON(w, http.StatusInternalServerError,
+			map[string]string{"error": "Event storage is unavailable"})
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(r.Context(), 5*time.Second)
+	defer cancel()
+
+	// Fetch one extra event to determine whether another page exists.
+	events, err := h.Store.ListEvents(ctx, limit+1, offset)
+	if err != nil {
+		writeJSON(w, http.StatusInternalServerError,
+			map[string]string{"error": "Could not retrieve events"})
+		return
+	}
+
+	hasMore := len(events) > limit
+	if hasMore {
+		events = events[:limit]
+	}
+
+	writeJSON(w, http.StatusOK, map[string]any{
+		"events":   events,
+		"page":     page,
+		"limit":    limit,
+		"has_more": hasMore,
 	})
 }
