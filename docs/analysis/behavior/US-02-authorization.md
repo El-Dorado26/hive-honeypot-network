@@ -34,39 +34,52 @@ Additional robustness case (not required by the US-02 acceptance criteria):
 
 Authorization must be checked by the backend on every protected request, regardless of what the frontend displays.
 
-## 5. UML Sequence Diagram
+## 5. Business Process Diagram
+
+**Notation:** Each box is a swimlane for one participant. Rounded shapes are start events, double circles are end events, rectangles are tasks, diamonds are decisions, and cylinders are data stores. Dotted arrows show data read from or written to a data store.
 
 ### 5.1 Authorization of a protected request (Scenarios 1, 2 and 3)
 
 ```mermaid
-sequenceDiagram
-    actor Client
-    participant API as Backend API
-    participant DB as User and Role Database
-
-    Client->>API: Request action or protected resource
-    API->>API: Check for valid authentication
-
-    alt No valid authentication
-        API-->>Client: HTTP 401 (no protected data returned)
-    else Authenticated
-        API->>DB: Retrieve roles for the user
-        DB-->>API: Return assigned roles
-        API->>API: Check whether a role permits the action
-
-        alt A role permits the action
-            API->>API: Perform the requested action
-            API-->>Client: Request allowed, return result
-        else No role permits the action
-            API-->>Client: Deny request (action not performed)
-        end
+flowchart TB
+    subgraph C["Client"]
+        C1(["Start: client requests an action"])
+        C2["Send request with authentication credential"]
+        C3["Receive HTTP 401"]
+        C4["Receive denial"]
+        C5["Receive result"]
+        CE1((("End: unauthenticated")))
+        CE2((("End: denied")))
+        CE3((("End: allowed")))
     end
+
+    subgraph A["Backend API"]
+        A1{"Valid authentication presented?"}
+        A2["Return HTTP 401 with no protected data"]
+        A3["Retrieve roles for the user"]
+        A4{"Does a role permit the action?"}
+        A5["Perform the requested action"]
+        A6["Return result"]
+        A7["Deny request without performing the action"]
+    end
+
+    subgraph D["User and Role Database"]
+        D1[("Users and roles")]
+    end
+
+    C1 --> C2 --> A1
+    A1 -->|"No"| A2 --> C3 --> CE1
+    A1 -->|"Yes"| A3
+    A3 -.->|"look up roles"| D1
+    D1 -.->|"assigned roles"| A4
+    A4 -->|"Yes"| A5 --> A6 --> C5 --> CE3
+    A4 -->|"No"| A7 --> C4 --> CE2
 ```
 
 ## 6. Acceptance Criteria Mapping
 
-- Scenario 1: Allow an authorized action, shown in the authorization sequence diagram (5.1).
-- Scenario 2: Deny an unauthorized action, shown in the authorization sequence diagram (5.1).
-- Scenario 3: Deny access to protected resources without authentication, shown in the authorization sequence diagram (5.1).
+- Scenario 1: Allow an authorized action, shown in the authorization business process diagram (5.1).
+- Scenario 2: Deny an unauthorized action, shown in the authorization business process diagram (5.1).
+- Scenario 3: Deny access to protected resources without authentication, shown in the authorization business process diagram (5.1).
 
 The model is consistent with US-02.
