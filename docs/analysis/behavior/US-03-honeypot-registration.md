@@ -33,43 +33,54 @@ Additional robustness case (not required by the US-03 acceptance criteria):
 
 - Storage failure: the backend returns an error response and the honeypot is not reported as registered.
 
-## 5. UML Sequence Diagram
+## 5. Business Process Diagram
+
+**Notation:** Each box is a swimlane for one participant. Rounded shapes are start events, double circles are end events, rectangles are tasks, diamonds are decisions, and cylinders are data stores. Dotted arrows show data read from or written to a data store.
 
 ### 5.1 Honeypot registration (Scenarios 1, 2 and 3)
 
 ```mermaid
-sequenceDiagram
-    actor User
-    participant UI as Frontend
-    participant API as Backend API
-    participant DB as Honeypot Registry
-
-    User->>UI: Enter honeypot details
-    UI->>API: Submit registration request
-    API->>API: Check authentication and permission to manage honeypots
-
-    alt User lacks permission
-        API-->>UI: Deny request (honeypot not registered)
-        UI-->>User: Show access denied
-    else User has permission
-        API->>API: Validate required honeypot details
-
-        alt Details missing or invalid
-            API-->>UI: Reject request and report invalid details
-            UI-->>User: Show validation errors
-        else Details valid
-            API->>DB: Store honeypot and assign unique identifier
-            DB-->>API: Return registered honeypot with identifier
-            API-->>UI: Registration successful
-            UI-->>User: Show registered honeypot and identifier
-        end
+flowchart TB
+    subgraph U["User"]
+        U1(["Start: user submits honeypot details"])
+        U2["Enter honeypot details"]
+        UE1((("End: honeypot registered")))
+        UE2((("End: request denied")))
+        UE3((("End: request rejected")))
     end
+
+    subgraph F["Frontend"]
+        F1["Send registration request"]
+        F2["Show access denied"]
+        F3["Show validation errors"]
+        F4["Show registered honeypot and identifier"]
+    end
+
+    subgraph B["Backend API"]
+        B1{"Authenticated and permitted to manage honeypots?"}
+        B2["Deny request, honeypot not registered"]
+        B3{"Required details present and valid?"}
+        B4["Reject request and report invalid details"]
+        B5["Store honeypot and assign unique identifier"]
+    end
+
+    subgraph D["Honeypot Registry"]
+        D1[("Registered honeypots")]
+    end
+
+    U1 --> U2 --> F1 --> B1
+    B1 -->|"No"| B2 --> F2 --> UE2
+    B1 -->|"Yes"| B3
+    B3 -->|"No"| B4 --> F3 --> UE3
+    B3 -->|"Yes"| B5
+    B5 -.->|"write"| D1
+    B5 --> F4 --> UE1
 ```
 
 ## 6. Acceptance Criteria Mapping
 
-- Scenario 1: Register a honeypot, shown in the registration sequence diagram (5.1).
-- Scenario 2: Reject invalid registration details, shown in the registration sequence diagram (5.1).
-- Scenario 3: Prevent unauthorized registration, shown in the registration sequence diagram (5.1).
+- Scenario 1: Register a honeypot, shown in the registration business process diagram (5.1).
+- Scenario 2: Reject invalid registration details, shown in the registration business process diagram (5.1).
+- Scenario 3: Prevent unauthorized registration, shown in the registration business process diagram (5.1).
 
 The model is consistent with US-03.
