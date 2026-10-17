@@ -31,51 +31,80 @@ This behavioral model describes how HIVE evaluates accepted events against enabl
 
 Users without permission to retrieve alerts are handled by role-based authorization (US-02).
 
-## 5. UML Sequence Diagrams
+## 5. Business Process Diagrams
+
+**Notation:** Each box is a swimlane for one participant. Rounded shapes are start events, double circles are end events, rectangles are tasks, diamonds are decisions, and cylinders are data stores. Dotted arrows show data read from or written to a data store.
 
 ### 5.1 Event evaluation and alert generation (Scenarios 1 and 2)
 
 ```mermaid
-sequenceDiagram
-    participant Proc as Event Processor
-    participant Eng as Detection Engine
-    participant DB as Rule and Alert Database
-
-    Proc->>Eng: Submit accepted event for evaluation
-    Eng->>DB: Load enabled detection rules
-    DB-->>Eng: Return enabled rules
-
-    loop For each enabled rule
-        Eng->>Eng: Evaluate event against rule conditions
-
-        alt Event satisfies the rule conditions
-            Eng->>DB: Record alert linked to the matching event
-            DB-->>Eng: Confirm alert recorded
-        else Event does not satisfy the rule conditions
-            Eng->>Eng: Generate no alert from this rule
-        end
+flowchart TB
+    subgraph P["Event Processor"]
+        P1(["Start: accepted event available"])
+        P2["Submit event for evaluation"]
     end
+
+    subgraph E["Detection Engine"]
+        E1["Load enabled detection rules"]
+        E2{"More enabled rules to evaluate?"}
+        E3["Evaluate event against rule conditions"]
+        E4{"Event satisfies the conditions?"}
+        E5["Record alert linked to the matching event"]
+        E6["Generate no alert from this rule"]
+        EE((("End: evaluation complete")))
+    end
+
+    subgraph D["Rule and Alert Database"]
+        D1[("Detection rules")]
+        D2[("Alerts")]
+    end
+
+    P1 --> P2 --> E1
+    E1 -.->|"read"| D1
+    D1 -.->|"enabled rules"| E2
+    E2 -->|"Yes"| E3 --> E4
+    E4 -->|"Yes"| E5 --> E2
+    E4 -->|"No"| E6 --> E2
+    E5 -.->|"write alert"| D2
+    E2 -->|"No"| EE
 ```
 
 ### 5.2 Alert retrieval (Scenario 3)
 
 ```mermaid
-sequenceDiagram
-    actor Analyst
-    participant API as Backend API
-    participant DB as Rule and Alert Database
+flowchart TB
+    subgraph A["Analyst"]
+        A1(["Start: analyst needs alert details"])
+        A2["Request alert"]
+        A3["Review alert details"]
+        A4["Receive denial"]
+        AE1((("End: alert reviewed")))
+        AE2((("End: access denied")))
+    end
 
-    Analyst->>API: Request alert
-    API->>API: Verify user is authorized (see US-02)
-    API->>DB: Retrieve alert and associated event reference
-    DB-->>API: Return alert details
-    API-->>Analyst: Return alert details with reference to associated event where available
+    subgraph B["Backend API"]
+        B1{"User authorized to retrieve alerts?"}
+        B2["Retrieve alert and associated event reference"]
+        B3["Return alert details with event reference where available"]
+        B4["Deny request, handled by US-02"]
+    end
+
+    subgraph D["Rule and Alert Database"]
+        D1[("Alerts")]
+    end
+
+    A1 --> A2 --> B1
+    B1 -->|"Yes"| B2
+    B2 -.->|"read"| D1
+    D1 -.->|"alert details"| B3
+    B3 --> A3 --> AE1
+    B1 -->|"No"| B4 --> A4 --> AE2
 ```
 
 ## 6. Acceptance Criteria Mapping
 
-- Scenario 1: Generate an alert for a matching event, shown in the evaluation sequence diagram (5.1).
-- Scenario 2: Do not generate an alert for a non-matching event, shown in the evaluation sequence diagram (5.1).
-- Scenario 3: Preserve alert information, shown in the alert retrieval sequence diagram (5.2).
+- Scenario 1: Generate an alert for a matching event, shown in the evaluation business process diagram (5.1).
+- Scenario 2: Do not generate an alert for a non-matching event, shown in the evaluation business process diagram (5.1).
+- Scenario 3: Preserve alert information, shown in the alert retrieval business process diagram (5.2).
 
 The model is consistent with US-06.
