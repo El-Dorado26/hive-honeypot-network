@@ -30,39 +30,57 @@ This behavioral model describes how HIVE accepts security events from registered
 
 Source validation depends on the honeypot registry created through US-03.
 
-## 5. UML Sequence Diagram
+## 5. Business Process Diagram
+
+**Notation:** Each box is a swimlane for one participant. Rounded shapes are start events, double circles are end events, rectangles are tasks, diamonds are decisions, and cylinders are data stores. Dotted arrows show data read from or written to a data store.
 
 ### 5.1 Event submission (Scenarios 1, 2 and 3)
 
 ```mermaid
-sequenceDiagram
-    participant HP as Honeypot or Client
-    participant API as Event Collection API
-    participant Reg as Honeypot Registry
-    participant Proc as Event Processing Workflow
-
-    HP->>API: Submit event
-    API->>API: Validate payload format and required fields
-
-    alt Event is malformed or lacks required fields
-        API-->>HP: Reject event with client error response
-    else Payload is valid
-        API->>Reg: Look up honeypot identifier
-        Reg-->>API: Return registered honeypot or not found
-
-        alt Honeypot identifier is not recognized
-            API-->>HP: Reject event (not accepted as event from a registered honeypot)
-        else Honeypot is registered
-            API->>Proc: Pass accepted event
-            API-->>HP: Event accepted
-        end
+flowchart TB
+    subgraph H["Honeypot or Client"]
+        H1(["Start: event needs to be reported"])
+        H2["Submit event"]
+        H3["Receive client error response"]
+        H4["Receive rejection"]
+        H5["Receive acknowledgement"]
+        HE1((("End: event rejected")))
+        HE2((("End: source rejected")))
+        HE3((("End: event accepted")))
     end
+
+    subgraph A["Event Collection API"]
+        A1{"Well formed with all required fields?"}
+        A2["Reject event with client error response"]
+        A3["Look up honeypot identifier"]
+        A4{"Honeypot registered?"}
+        A5["Reject event, not accepted from a registered honeypot"]
+        A6["Accept event"]
+        A7["Acknowledge submission"]
+    end
+
+    subgraph R["Honeypot Registry"]
+        R1[("Registered honeypots")]
+    end
+
+    subgraph P["Event Processing Workflow"]
+        P1["Receive accepted event for normalization and storage"]
+    end
+
+    H1 --> H2 --> A1
+    A1 -->|"No"| A2 --> H3 --> HE1
+    A1 -->|"Yes"| A3
+    A3 -.->|"look up"| R1
+    R1 -.->|"registered or not found"| A4
+    A4 -->|"No"| A5 --> H4 --> HE2
+    A4 -->|"Yes"| A6 --> P1
+    A6 --> A7 --> H5 --> HE3
 ```
 
 ## 6. Acceptance Criteria Mapping
 
-- Scenario 1: Accept a valid event, shown in the event submission sequence diagram (5.1).
-- Scenario 2: Reject a malformed event, shown in the event submission sequence diagram (5.1).
-- Scenario 3: Reject an unknown event source, shown in the event submission sequence diagram (5.1).
+- Scenario 1: Accept a valid event, shown in the event submission business process diagram (5.1).
+- Scenario 2: Reject a malformed event, shown in the event submission business process diagram (5.1).
+- Scenario 3: Reject an unknown event source, shown in the event submission business process diagram (5.1).
 
 The model is consistent with US-04.
