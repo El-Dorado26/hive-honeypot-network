@@ -31,63 +31,88 @@ This behavioral model describes how HIVE records security-relevant actions, whet
 
 Secrets are never written to audit records, whether the action succeeded or failed.
 
-## 5. UML Sequence Diagrams
+## 5. Business Process Diagrams
+
+**Notation:** Each box is a swimlane for one participant. Rounded shapes are start events, double circles are end events, rectangles are tasks, diamonds are decisions, and cylinders are data stores. Dotted arrows show data read from or written to a data store.
 
 ### 5.1 Recording audit records (Scenarios 1, 2 and 4)
 
 ```mermaid
-sequenceDiagram
-    actor User
-    participant API as Backend API
-    participant Audit as Audit Logger
-    participant DB as Audit Log Database
-
-    User->>API: Attempt security-relevant action
-    API->>API: Process the action
-
-    alt Action completes successfully
-        API->>Audit: Report success with action details
-        Audit->>Audit: Build audit record excluding passwords and secrets
-        Audit->>DB: Store audit record linked to responsible user where available
-    else Action fails
-        API->>Audit: Report failure with available details
-
-        alt Failure falls within audit policy
-            Audit->>Audit: Build audit record excluding passwords and secrets
-            Audit->>DB: Store audit record with details for investigation
-        else Failure is outside audit policy
-            Audit->>Audit: No audit record required
-        end
+flowchart TB
+    subgraph U["User"]
+        U1(["Start: user attempts a security-relevant action"])
+        U2["Request the action"]
+        U3["Receive result of the action"]
+        UE((("End: action result received")))
     end
 
-    API-->>User: Return result of the action
+    subgraph B["Backend API"]
+        B1["Process the action"]
+        B2{"Action completed successfully?"}
+        B3["Report success with action details"]
+        B4["Report failure with available details"]
+        B5{"Failure within the audit policy?"}
+        B6["Return result of the action"]
+    end
+
+    subgraph L["Audit Logger"]
+        L1["Build audit record excluding passwords and secrets"]
+        L2["Store audit record, linked to responsible user where available"]
+        L3["Create no audit record"]
+    end
+
+    subgraph D["Audit Log Database"]
+        D1[("Audit records")]
+    end
+
+    U1 --> U2 --> B1 --> B2
+    B2 -->|"Yes"| B3 --> L1
+    B2 -->|"No"| B4 --> B5
+    B5 -->|"Yes"| L1
+    B5 -->|"No"| L3 --> B6
+    L1 --> L2
+    L2 -.->|"write"| D1
+    L2 --> B6
+    B6 --> U3 --> UE
 ```
 
 ### 5.2 Reviewing audit logs (Scenario 3)
 
 ```mermaid
-sequenceDiagram
-    actor Reviewer as User
-    participant API as Backend API
-    participant DB as Audit Log Database
-
-    Reviewer->>API: Request audit-log data
-    API->>API: Check authentication and permission to review audit logs
-
-    alt User lacks permission
-        API-->>Reviewer: Deny request (no audit records returned)
-    else User has permission
-        API->>DB: Retrieve audit records
-        DB-->>API: Return audit records
-        API-->>Reviewer: Return audit records
+flowchart TB
+    subgraph U["User"]
+        U1(["Start: user wants to review audit logs"])
+        U2["Request audit-log data"]
+        U3["Review audit records"]
+        U4["Receive denial"]
+        UE1((("End: records reviewed")))
+        UE2((("End: access denied")))
     end
+
+    subgraph B["Backend API"]
+        B1{"Authenticated and permitted to review audit logs?"}
+        B2["Deny request, no audit records returned"]
+        B3["Retrieve audit records"]
+        B4["Return audit records"]
+    end
+
+    subgraph D["Audit Log Database"]
+        D1[("Audit records")]
+    end
+
+    U1 --> U2 --> B1
+    B1 -->|"No"| B2 --> U4 --> UE2
+    B1 -->|"Yes"| B3
+    B3 -.->|"read"| D1
+    D1 -.->|"records"| B4
+    B4 --> U3 --> UE1
 ```
 
 ## 6. Acceptance Criteria Mapping
 
-- Scenario 1: Record a successful security-relevant action, shown in the recording sequence diagram (5.1).
-- Scenario 2: Record a failed security-relevant action, shown in the recording sequence diagram (5.1).
-- Scenario 3: Protect audit logs from unauthorized access, shown in the review sequence diagram (5.2).
-- Scenario 4: Avoid storing secrets in audit logs, shown in the recording sequence diagram (5.1) at the step that builds the audit record.
+- Scenario 1: Record a successful security-relevant action, shown in the recording business process diagram (5.1).
+- Scenario 2: Record a failed security-relevant action, shown in the recording business process diagram (5.1).
+- Scenario 3: Protect audit logs from unauthorized access, shown in the review business process diagram (5.2).
+- Scenario 4: Avoid storing secrets in audit logs, shown in the recording business process diagram (5.1) at the step that builds the audit record.
 
 The model is consistent with US-08.
