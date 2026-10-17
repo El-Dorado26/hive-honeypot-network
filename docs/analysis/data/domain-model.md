@@ -84,7 +84,88 @@ Audit logs record both successful and failed actions, along with the details nee
 - An alert references one detection rule and one event in the initial design. An alert referencing several related events is a possible future extension.
 - An audit log entry may be associated with a user. Some system-generated actions, or actions by users who cannot be identified, may not have an associated user.
 
-## 4. Current Implementation and Planned Design
+## 4. UML Class Diagram
+
+```mermaid
+classDiagram
+    class User {
+        <<planned>>
+        +Long id
+        +String username
+        +String passwordHash
+        +Boolean enabled
+    }
+
+    class Role {
+        <<planned>>
+        +Long id
+        +String name
+        +String description
+    }
+
+    class Honeypot {
+        <<planned>>
+        +Long id
+        +String name
+        +String honeypotType
+        +String status
+    }
+
+    class Event {
+        <<implemented>>
+        +Long id
+        +String source
+        +String eventType
+        +Timestamp occurredAt
+        +JSON eventData
+        +Timestamp receivedAt
+    }
+
+    class DetectionRule {
+        <<planned>>
+        +Long id
+        +String name
+        +String description
+        +JSON conditions
+        +Boolean enabled
+    }
+
+    class Alert {
+        <<planned>>
+        +Long id
+        +String severity
+        +String status
+        +Timestamp createdAt
+    }
+
+    class AuditLog {
+        <<planned>>
+        +Long id
+        +String action
+        +String outcome
+        +JSON details
+        +Timestamp createdAt
+    }
+
+    User "0..*" -- "0..*" Role : has roles
+    Honeypot "1" -- "0..*" Event : generates (planned)
+    DetectionRule "1" -- "0..*" Alert : generates
+    Event "1" -- "0..*" Alert : triggers
+    User "0..1" -- "0..*" AuditLog : performs
+    DetectionRule ..> Event : evaluates
+```
+
+**Legend:** `<<implemented>>` marks a concept that exists in the current system. Only Event is implemented, as the `events` table. `<<planned>>` marks concepts that are part of the proposed design. The Honeypot to Event association is planned, because `events.source` is currently a plain text field.
+
+**Notes on the diagram:**
+- Attribute names use camelCase and correspond to the snake_case columns in the ER diagram. Foreign keys are shown as associations instead of attributes.
+- A user can have many roles and a role can be assigned to many users. The `user_roles` table from the ER diagram is an implementation detail and is not shown as a class.
+- There is no Permission class, because permissions are initially defined per role in application code.
+- The audit log side of the User association is optional (`0..1`), because some actions are system-generated or the responsible user cannot be identified.
+- The dashed arrow means a detection rule evaluates events. Evaluations are not stored, and only matches produce alerts.
+- Each alert references one rule and one event in the initial design.
+
+## 5. Current Implementation and Planned Design
 
 The current PostgreSQL `events` table contains:
 
