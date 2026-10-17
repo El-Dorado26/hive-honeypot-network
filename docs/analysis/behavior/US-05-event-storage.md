@@ -31,36 +31,49 @@ Additional robustness case (not required by the US-05 acceptance criteria):
 
 - Normalization failure: if an accepted event cannot be mapped to the common schema, the failure is handled through the same error-handling mechanism and the event is not reported as stored.
 
-## 5. UML Sequence Diagram
+## 5. Business Process Diagram
+
+**Notation:** Each box is a swimlane for one participant. Rounded shapes are start events, double circles are end events, rectangles are tasks, diamonds are decisions, and cylinders are data stores. Dotted arrows show data read from or written to a data store.
 
 ### 5.1 Normalization and storage (Scenarios 1, 2 and 3)
 
 ```mermaid
-sequenceDiagram
-    participant Collector as Event Collection
-    participant Proc as Event Processor
-    participant DB as Event Database
-    participant Err as Error Handling
-
-    Collector->>Proc: Pass accepted event
-    Proc->>Proc: Map event data to common event schema
-    Proc->>Proc: Preserve required information from original event
-    Proc->>DB: Store normalized event
-
-    alt Event stored successfully
-        DB-->>Proc: Confirm storage
-        Proc-->>Collector: Report event stored
-    else Database cannot store the event
-        DB-->>Proc: Storage failure
-        Proc->>Err: Report or record processing failure
-        Proc-->>Collector: Report failure (event not reported as stored)
+flowchart TB
+    subgraph C["Event Collection"]
+        C1(["Start: event accepted"])
+        C2["Pass accepted event to processor"]
+        CE1((("End: event stored")))
+        CE2((("End: event not stored")))
     end
+
+    subgraph P["Event Processor"]
+        P1["Map event data to common event schema"]
+        P2["Preserve required information from original event"]
+        P3["Store normalized event"]
+        P4{"Stored successfully?"}
+        P5["Report event as stored"]
+        P6["Report failure, event not reported as stored"]
+    end
+
+    subgraph D["Event Database"]
+        D1[("Events")]
+    end
+
+    subgraph E["Error Handling"]
+        E1["Report or record the processing failure"]
+    end
+
+    C1 --> C2 --> P1 --> P2 --> P3
+    P3 -.->|"write"| D1
+    D1 -.->|"storage result"| P4
+    P4 -->|"Yes"| P5 --> CE1
+    P4 -->|"No"| E1 --> P6 --> CE2
 ```
 
 ## 6. Acceptance Criteria Mapping
 
-- Scenario 1: Normalize an accepted event, shown in the normalization and storage sequence diagram (5.1).
-- Scenario 2: Store a normalized event, shown in the normalization and storage sequence diagram (5.1). Retrieval through search is covered by US-07.
-- Scenario 3: Handle a storage failure, shown in the normalization and storage sequence diagram (5.1).
+- Scenario 1: Normalize an accepted event, shown in the normalization and storage business process diagram (5.1).
+- Scenario 2: Store a normalized event, shown in the normalization and storage business process diagram (5.1). Retrieval through search is covered by US-07.
+- Scenario 3: Handle a storage failure, shown in the normalization and storage business process diagram (5.1).
 
 The model is consistent with US-05.
