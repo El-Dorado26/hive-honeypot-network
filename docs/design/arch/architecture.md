@@ -14,9 +14,9 @@ The components are logical modules of the Go backend.
 
 | Status | Meaning | Diagram style |
 |---|---|---|
-| Implemented | The component exists in the current system. | Green, solid border |
-| Partially implemented | Part of the component exists. | Amber, solid border |
-| Planned | The component is designed but not built. | Grey, dashed border |
+| Implemented | The component exists in the current system. | Dark green fill, white text, solid border |
+| Partially implemented | Part of the component exists. | Dark amber fill, white text, solid border |
+| Planned | The component is designed but not built. | Dark grey fill, white text, dashed border |
 
 | Layer | Component | Status |
 |---|---|---|
@@ -38,6 +38,7 @@ The components are logical modules of the Go backend.
 ### 3.1 Layers
 
 ```mermaid
+
 flowchart LR
     HP["Honeypot layer<br/>SSH, HTTP/web, simulated API"]
     FE["Frontend layer<br/>React web dashboard"]
@@ -48,10 +49,12 @@ flowchart LR
     FE -->|"HTTPS / REST"| BE
     BE <-->|"SQL"| DB
 
-    classDef partial fill:#fff3cd,stroke:#b58900,stroke-width:2px
-    classDef planned fill:#f5f5f5,stroke:#888888,stroke-dasharray:5 3
+    classDef partial fill:#8A6500,stroke:#FFD166,color:#FFFFFF,stroke-width:2px
+    classDef planned fill:#424B57,stroke:#AAB4C0,color:#FFFFFF,stroke-width:2px,stroke-dasharray:5 3
+
     class BE,DB partial
     class HP,FE planned
+
 ```
 
 The backend and database layers are partially implemented. The honeypot and frontend layers are planned.
@@ -84,18 +87,21 @@ flowchart LR
     DETECT --> ALERT
     ALERT --> ALERTS
 
-    classDef implemented fill:#d9f2d9,stroke:#2e7d32,stroke-width:2px
-    classDef partial fill:#fff3cd,stroke:#b58900,stroke-width:2px
-    classDef planned fill:#f5f5f5,stroke:#888888,stroke-dasharray:5 3
+    classDef implemented fill:#176B3A,stroke:#65D98B,color:#FFFFFF,stroke-width:2px
+    classDef partial fill:#8A6500,stroke:#FFD166,color:#FFFFFF,stroke-width:2px
+    classDef planned fill:#424B57,stroke:#AAB4C0,color:#FFFFFF,stroke-width:2px,stroke-dasharray:5 3
 
     class API,EVENTS implemented
     class VALID,PROC partial
     class HP,HONEYPOTS,ERR,DETECT,RULES,ALERT,ALERTS planned
+
+
 ```
 
 ### 3.3 User access, administration and auditing
 
 ```mermaid
+
 flowchart LR
     subgraph FE["Frontend layer: React"]
         LOGIN["Login"]
@@ -125,10 +131,12 @@ flowchart LR
     AUDIT -->|"records"| LOGS
     API -->|"audit log review"| LOGS
 
-    classDef implemented fill:#d9f2d9,stroke:#2e7d32,stroke-width:2px
-    classDef planned fill:#f5f5f5,stroke:#888888,stroke-dasharray:5 3
+    classDef implemented fill:#176B3A,stroke:#65D98B,color:#FFFFFF,stroke-width:2px
+    classDef planned fill:#424B57,stroke:#AAB4C0,color:#FFFFFF,stroke-width:2px,stroke-dasharray:5 3
+
     class API,EVENTS implemented
     class LOGIN,DASH,SEARCH,ALERTV,HPM,AUDV,AUTH,USERS,ALERTS,HONEYPOTS,AUDIT,LOGS planned
+
 ```
 
 ## 4. Component Responsibilities
