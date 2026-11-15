@@ -11,10 +11,11 @@ These sequence diagrams describe how HIVE authenticates users, rejects invalid l
 
 ## 2. Sequence Diagram 1: User Login
 
-This diagram covers successful authentication, invalid credentials, unknown usernames, and disabled accounts.
+This diagram covers successful authentication, invalid credentials, unknown usernames, and disabled accounts. Messages are numbered. Every failed login returns the same generic failure, so the response does not reveal whether a username exists.
 
 ```mermaid
 sequenceDiagram
+    autonumber
     actor User
     participant Frontend
     participant Backend as Authentication API
@@ -24,35 +25,27 @@ sequenceDiagram
     Frontend->>Backend: Submit login credentials
     Backend->>Backend: Validate login request
 
-    alt Invalid request
+    alt Request is invalid
         Backend-->>Frontend: Reject invalid request
         Frontend-->>User: Display error message
-    else Valid request
+    else Request is valid
         Backend->>DB: Find account by username
         DB-->>Backend: Return account or not found
+        Backend->>Backend: Check account status and password
 
-        alt Account does not exist
-            Backend->>Backend: Reject authentication
+        alt Account not found
             Backend-->>Frontend: Return generic login failure
             Frontend-->>User: Display generic error
-        else Account exists
-            Backend->>Backend: Check whether account is enabled
-            alt Account is disabled
-                Backend->>Backend: Reject authentication
-                Backend-->>Frontend: Return generic login failure
-                Frontend-->>User: Display generic error
-            else Account is enabled
-                Backend->>Backend: Verify password against stored hash
-                alt Password is incorrect
-                    Backend->>Backend: Reject authentication
-                    Backend-->>Frontend: Return generic login failure
-                    Frontend-->>User: Display generic error
-                else Password is correct
-                    Backend->>Backend: Establish session or issue authentication credential
-                    Backend-->>Frontend: Return successful authentication result
-                    Frontend-->>User: Allow access to permitted features
-                end
-            end
+        else Account is disabled
+            Backend-->>Frontend: Return generic login failure
+            Frontend-->>User: Display generic error
+        else Password is incorrect
+            Backend-->>Frontend: Return generic login failure
+            Frontend-->>User: Display generic error
+        else Credentials are valid
+            Backend->>Backend: Establish session or issue authentication credential
+            Backend-->>Frontend: Return successful authentication result
+            Frontend-->>User: Allow access to permitted features
         end
     end
 ```
@@ -63,10 +56,11 @@ This diagram covers the unauthenticated API request scenario. It shows that the 
 
 ```mermaid
 sequenceDiagram
+    autonumber
     actor Client
     participant Backend as HIVE Backend API
 
-    Client->>Backend: Request protected endpoint without valid authentication
+    Client->>Backend: Request protected endpoint
     Backend->>Backend: Check authentication credentials
 
     alt Authentication is missing or invalid
@@ -80,13 +74,13 @@ sequenceDiagram
 
 ## 4. Acceptance Criteria Mapping
 
-| US-01 Scenario | Description | Sequence Diagram |
-|---|---|---|
-| Scenario 1 | Successful login with valid credentials | Diagram 1 |
-| Scenario 2 | Invalid credentials, including an unknown username or incorrect password | Diagram 1 |
-| Scenario 3 | Unauthenticated request to a protected API endpoint | Diagram 2 |
-| Scenario 4 | Disabled account cannot authenticate | Diagram 1 |
+| US-01 Scenario | Description | Sequence Diagram | Branch |
+|---|---|---|---|
+| Scenario 1 | Successful login with valid credentials | Diagram 1 | Credentials are valid |
+| Scenario 2 | Invalid credentials, including an unknown username or incorrect password | Diagram 1 | Account not found, Password is incorrect |
+| Scenario 3 | Unauthenticated request to a protected API endpoint | Diagram 2 | Authentication is missing or invalid |
+| Scenario 4 | Disabled account cannot authenticate | Diagram 1 | Account is disabled |
 
-
+The invalid request branch in Diagram 1 is an extra robustness case. US-01 does not require it.
 
 The diagrams are based on the US-01 behavioral model and its acceptance scenarios.
